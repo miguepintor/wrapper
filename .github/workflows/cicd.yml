@@ -1,0 +1,69 @@
+name: wrapper CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['.gitignore', '.vscode', 'README.md']
+  pull_request:
+    types: [synchronize, opened]
+    branches: [main]
+    paths-ignore: ['.gitignore', '.vscode', 'README.md']
+
+jobs:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    timeout: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          registry-url: 'https://npm.pkg.github.com'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ github.token }}
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unused dependencies
+        run: npm run depcheck
+
+      # - name: Unit tests
+      #   run: npm test
+
+      # - name: SonarCloud Scan
+      #   uses: SonarSource/sonarcloud-github-action@master
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  cd:
+    name: Deploy
+    needs: ci
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CLOUD_DEV_CREDENTIALS }}
+
+      - name: deploy wrapper
+        run: >
+          gcloud functions deploy wrapper
+          --project=ef-dev02-gather
+          --quiet
+          --runtime nodejs20
+          --trigger-http
+          --ingress-settings=all
+          --region=europe-west1
+          --timeout=300s
