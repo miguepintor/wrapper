@@ -35,15 +35,9 @@ jobs:
 
       - name: Unused dependencies
         run: npm run depcheck
-
-      # - name: Unit tests
+      
+      # - name: Test
       #   run: npm test
-
-      # - name: SonarCloud Scan
-      #   uses: SonarSource/sonarcloud-github-action@master
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   cd:
     name: Deploy
@@ -60,10 +54,11 @@ jobs:
       - name: deploy wrapper
         run: >
           gcloud functions deploy wrapper
-          --project=ef-dev02-gather
+          --project=sema4-419121
           --quiet
           --runtime nodejs20
           --trigger-http
           --ingress-settings=all
           --region=europe-west1
           --timeout=300s
+          --allow-unauthenticated
