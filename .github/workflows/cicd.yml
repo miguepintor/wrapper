@@ -13,7 +13,7 @@ jobs:
   ci:
     name: CI
     runs-on: ubuntu-latest
-    timeout: 5
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 
@@ -44,12 +44,13 @@ jobs:
     needs: ci
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
       - uses: google-github-actions/auth@v1
         with:
-          credentials_json: ${{ secrets.GOOGLE_CLOUD_DEV_CREDENTIALS }}
+          credentials_json: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
 
       - name: deploy wrapper
         run: >
