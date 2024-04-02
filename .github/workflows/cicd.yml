@@ -52,7 +52,7 @@ jobs:
         with:
           credentials_json: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
 
-      - name: deploy wrapper
+      - name: Deploy wrapper
         run: >
           gcloud functions deploy wrapper
           --project=sema4-419121
